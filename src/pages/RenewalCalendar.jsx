@@ -5,6 +5,7 @@ import { STATE_NAMES } from "../data/reference"
 import { Card, PageHeader, CredBadge } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
 import { getLicensesExpiringIn, getDeaExpiringIn } from "../data/providers"
+import { downloadCsv, toCsv } from "../utils/exportCsv"
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
@@ -46,6 +47,20 @@ export default function RenewalCalendar() {
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b))
   }, [activeProviders, windowMonths])
 
+  const exportExpiringReport = (days) => {
+    const rows = [["Type", "Provider", "Credential", "State", "DEA Number", "Expiration"]]
+    activeProviders.forEach((p) => {
+      getLicensesExpiringIn(p, days).forEach(({ state, expires }) => {
+        rows.push(["License", p.name, p.type, state, "", expires])
+      })
+      getDeaExpiringIn(p, days).forEach(({ state, num, expires }) => {
+        rows.push(["DEA", p.name, p.type, state, num, expires])
+      })
+    })
+    const sorted = rows.slice(1).sort((a, b) => a[5].localeCompare(b[5]))
+    downloadCsv(toCsv([rows[0], ...sorted]), `expiring-report-${days}-days-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
   return (
     <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Renewal Calendar" subtitle="Licenses and DEA registrations expiring by month" />
@@ -62,6 +77,28 @@ export default function RenewalCalendar() {
             ))}
           </select>
         </label>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 14, color: theme.muted }}>Export expiring report:</span>
+          {[30, 60, 90].map((days) => (
+            <button
+              key={days}
+              type="button"
+              onClick={() => exportExpiringReport(days)}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 6,
+                border: "none",
+                background: theme.accent,
+                color: theme.accentText,
+                fontSize: 14,
+                cursor: "pointer",
+                fontWeight: 500,
+              }}
+            >
+              Next {days} days (CSV)
+            </button>
+          ))}
+        </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {byMonth.map(([key, { licenses, dea }]) => {
