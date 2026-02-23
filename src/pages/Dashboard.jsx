@@ -71,7 +71,6 @@ export default function Dashboard() {
     { path: "/calendar", label: "Renewal Calendar", desc: "Licenses & DEA by month", icon: "📅" },
     { path: "/nlc", label: "Compacts", desc: "NLC/IMLC eligibility", icon: "🤝" },
     { path: "/ref", label: "State Boards", desc: "Board info & renewal", icon: "🏛" },
-    { path: "/onboard", label: "Onboarding Checklist", desc: "Licenses to close gaps", icon: "✅" },
     { path: "/compare", label: "Provider Comparison", desc: "Compare 2–3 providers", icon: "⚖" },
   ]
 

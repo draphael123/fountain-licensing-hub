@@ -14,7 +14,6 @@ import DEATracker from "./pages/DEATracker"
 import NPIDirectory from "./pages/NPIDirectory"
 import CompactEligibility from "./pages/CompactEligibility"
 import StateReference from "./pages/StateReference"
-import OnboardingChecklist from "./pages/OnboardingChecklist"
 import ProviderComparison from "./pages/ProviderComparison"
 import RenewalCalendar from "./pages/RenewalCalendar"
 import { PROVIDERS } from "./data/providers"
@@ -32,7 +31,6 @@ const nav = [
   { path: "/calendar", label: "Calendar", icon: "📅" },
   { path: "/nlc", label: "Compacts", icon: "🤝" },
   { path: "/ref", label: "State Boards", icon: "🏛" },
-  { path: "/onboard", label: "Onboarding", icon: "✅" },
   { path: "/compare", label: "Compare", icon: "⚖" },
 ]
 
@@ -224,7 +222,6 @@ function App() {
         <Route path="/npi" element={<NPIDirectory />} />
         <Route path="/nlc" element={<CompactEligibility />} />
         <Route path="/ref" element={<StateReference />} />
-        <Route path="/onboard" element={<OnboardingChecklist />} />
         <Route path="/compare" element={<ProviderComparison />} />
         <Route path="/calendar" element={<RenewalCalendar />} />
       </Routes>

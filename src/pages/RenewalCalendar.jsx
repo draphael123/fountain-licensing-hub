@@ -141,7 +141,9 @@ export default function RenewalCalendar() {
           )
         })}
         {byMonth.every(([, data]) => data.licenses.length === 0 && data.dea.length === 0) && (
-          <p style={{ color: theme.muted }}>No licenses or DEA expiring in the selected window.</p>
+          <p style={{ color: theme.muted }}>
+            No licenses or DEA expiring in the selected window. Add <code style={{ background: theme.bg1, padding: "2px 6px", borderRadius: 4 }}>licenseExpirations</code> and <code style={{ background: theme.bg1, padding: "2px 6px", borderRadius: 4 }}>deaExpirations</code> in provider data to see renewals here.
+          </p>
         )}
       </div>
     </div>

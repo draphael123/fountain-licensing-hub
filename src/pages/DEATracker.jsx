@@ -1,4 +1,5 @@
-import { getActiveDea, getExpiredDea } from "../data/providers"
+import { useMemo } from "react"
+import { PROVIDERS, getActiveDea, getExpiredDea } from "../data/providers"
 import { STATE_NAMES, ALL_STATES } from "../data/reference"
 import { Card, PageHeader, CredBadge } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
