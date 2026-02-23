@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react"
 import { PROVIDERS } from "../data/providers"
-import { Card, PageHeader, CredBadge, styles } from "../components/ui"
+import { Card, PageHeader, CredBadge } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
 import { downloadCsv, toCsv } from "../utils/exportCsv"
 
 export default function NPIDirectory() {
+  const { theme } = useTheme()
   const [search, setSearch] = useState("")
 
   const filtered = useMemo(() => {
@@ -19,7 +21,7 @@ export default function NPIDirectory() {
   }
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="NPI Directory" subtitle="Provider, type, NPI, contract start" />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 24 }}>
         <input
@@ -30,10 +32,10 @@ export default function NPIDirectory() {
           style={{
             minWidth: 320,
             padding: "10px 14px",
-            background: styles.bg1,
-            border: `1px solid ${styles.border1}`,
+            background: theme.bg1,
+            border: `1px solid ${theme.border1}`,
             borderRadius: 8,
-            color: styles.text,
+            color: theme.text,
             fontSize: 14,
           }}
         />
@@ -44,8 +46,8 @@ export default function NPIDirectory() {
             padding: "10px 16px",
             borderRadius: 8,
             border: "none",
-            background: styles.accent,
-            color: styles.bg0,
+            background: theme.accent,
+            color: theme.accentText,
             cursor: "pointer",
             fontWeight: 600,
           }}
@@ -53,27 +55,27 @@ export default function NPIDirectory() {
           Export CSV
         </button>
       </div>
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", maxWidth: "100%" }}>
+        <table style={{ width: "100%", minWidth: 480, borderCollapse: "collapse" }}>
           <thead>
-            <tr style={{ borderBottom: `2px solid ${styles.border1}` }}>
-              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: styles.muted }}>Provider</th>
-              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: styles.muted }}>Type</th>
-              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: styles.muted }}>NPI</th>
-              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: styles.muted }}>Contract Start</th>
+            <tr style={{ borderBottom: `2px solid ${theme.border1}` }}>
+              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: theme.muted, background: theme.bg2, position: "sticky", left: 0, zIndex: 1 }}>Provider</th>
+              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: theme.muted, background: theme.bg2 }}>Type</th>
+              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: theme.muted, background: theme.bg2 }}>NPI</th>
+              <th style={{ textAlign: "left", padding: 12, fontSize: 12, color: theme.muted, background: theme.bg2 }}>Contract Start</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map((p) => (
-              <tr key={p.id} style={{ borderBottom: `1px solid ${styles.border2}` }}>
-                <td style={{ padding: 12 }}>
+              <tr key={p.id} style={{ borderBottom: `1px solid ${theme.border2}` }}>
+                <td style={{ padding: 12, position: "sticky", left: 0, background: theme.bg0, zIndex: 1 }}>
                   <span style={{ fontWeight: 500 }}>{p.name}</span>
                 </td>
                 <td style={{ padding: 12 }}>
                   <CredBadge type={p.type} />
                 </td>
                 <td style={{ padding: 12, fontFamily: "'DM Mono', monospace", fontSize: 14, userSelect: "all" }}>{p.npi}</td>
-                <td style={{ padding: 12, color: styles.muted }}>{p.contractStart ?? "—"}</td>
+                <td style={{ padding: 12, color: theme.muted }}>{p.contractStart ?? "—"}</td>
               </tr>
             ))}
           </tbody>

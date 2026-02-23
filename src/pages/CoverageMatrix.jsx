@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react"
 import { PROVIDERS } from "../data/providers"
+import { getActiveStates } from "../data/providers"
 import { ALL_STATES, STATE_NAMES, isOperatingState } from "../data/reference"
-import { Card, PageHeader, styles } from "../components/ui"
+import { Card, PageHeader } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
 import { downloadCsv, toCsv } from "../utils/exportCsv"
 
 export default function CoverageMatrix() {
+  const { theme } = useTheme()
   const [orientation, setOrientation] = useState("providersAsRows") // providersAsRows | statesAsRows
 
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
@@ -16,7 +19,7 @@ export default function CoverageMatrix() {
         p.name,
         p.type,
         p.npi,
-        ...ALL_STATES.map((st) => (p.states.includes(st) ? "Y" : "")),
+        ...ALL_STATES.map((st) => (getActiveStates(p).includes(st) ? "Y" : "")),
       ])
       return [header, ...rows]
     }
@@ -24,7 +27,7 @@ export default function CoverageMatrix() {
     const rows = ALL_STATES.map((st) => [
       st,
       STATE_NAMES[st] || st,
-      ...activeProviders.map((p) => (p.states.includes(st) ? "Y" : "")),
+      ...activeProviders.map((p) => (getActiveStates(p).includes(st) ? "Y" : "")),
     ])
     return [header, ...rows]
   }, [activeProviders, orientation])
@@ -34,7 +37,7 @@ export default function CoverageMatrix() {
   }
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Coverage Matrix" subtitle="Providers × states — who is licensed where" />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center", marginBottom: 24 }}>
         <button
@@ -43,9 +46,9 @@ export default function CoverageMatrix() {
           style={{
             padding: "8px 16px",
             borderRadius: 6,
-            border: `1px solid ${orientation === "providersAsRows" ? styles.accent : styles.border1}`,
-            background: orientation === "providersAsRows" ? `${styles.accent}20` : styles.bg2,
-            color: styles.text,
+            border: `1px solid ${orientation === "providersAsRows" ? theme.accent : theme.border1}`,
+            background: orientation === "providersAsRows" ? `${theme.accent}20` : theme.bg2,
+            color: theme.text,
             cursor: "pointer",
           }}
         >
@@ -57,9 +60,9 @@ export default function CoverageMatrix() {
           style={{
             padding: "8px 16px",
             borderRadius: 6,
-            border: `1px solid ${orientation === "statesAsRows" ? styles.accent : styles.border1}`,
-            background: orientation === "statesAsRows" ? `${styles.accent}20` : styles.bg2,
-            color: styles.text,
+            border: `1px solid ${orientation === "statesAsRows" ? theme.accent : theme.border1}`,
+            background: orientation === "statesAsRows" ? `${theme.accent}20` : theme.bg2,
+            color: theme.text,
             cursor: "pointer",
           }}
         >
@@ -72,8 +75,8 @@ export default function CoverageMatrix() {
             padding: "8px 16px",
             borderRadius: 6,
             border: "none",
-            background: styles.accent,
-            color: styles.bg0,
+            background: theme.accent,
+            color: theme.accentText,
             cursor: "pointer",
             fontWeight: 600,
           }}
@@ -82,30 +85,30 @@ export default function CoverageMatrix() {
         </button>
       </div>
 
-      <div style={{ overflowX: "auto", marginBottom: 24 }}>
-        <table style={{ borderCollapse: "collapse", fontSize: 12 }}>
+      <div style={{ overflowX: "auto", marginBottom: 24, WebkitOverflowScrolling: "touch", maxWidth: "100%" }}>
+        <table style={{ borderCollapse: "collapse", fontSize: 12, minWidth: 400 }}>
           <thead>
             <tr>
               {orientation === "providersAsRows" && (
                 <>
-                  <th style={{ ...thStyle, minWidth: 140 }}>Provider</th>
-                  <th style={thStyle}>Type</th>
-                  <th style={thStyle}>NPI</th>
+                  <th style={{ ...thStyle(theme), minWidth: 140, position: "sticky", left: 0, zIndex: 2, boxShadow: "2px 0 4px rgba(0,0,0,0.06)" }}>Provider</th>
+                  <th style={thStyle(theme)}>Type</th>
+                  <th style={thStyle(theme)}>NPI</th>
                 </>
               )}
               {orientation === "statesAsRows" && (
                 <>
-                  <th style={{ ...thStyle, minWidth: 50 }}>State</th>
-                  <th style={{ ...thStyle, minWidth: 120 }}>Name</th>
+                  <th style={{ ...thStyle(theme), minWidth: 50, position: "sticky", left: 0, zIndex: 2, boxShadow: "2px 0 4px rgba(0,0,0,0.06)" }}>State</th>
+                  <th style={{ ...thStyle(theme), minWidth: 120 }}>Name</th>
                 </>
               )}
               {orientation === "providersAsRows" && ALL_STATES.map((st) => (
-                <th key={st} style={{ ...thStyle, width: 32, textAlign: "center" }} title={STATE_NAMES[st]}>
+                <th key={st} style={{ ...thStyle(theme), width: 32, textAlign: "center" }} title={STATE_NAMES[st]}>
                   {st}
                 </th>
               ))}
               {orientation === "statesAsRows" && activeProviders.map((p) => (
-                <th key={p.id} style={{ ...thStyle, width: 32, textAlign: "center" }} title={`${p.name} (${p.type})`}>
+                <th key={p.id} style={{ ...thStyle(theme), width: 32, textAlign: "center" }} title={`${p.name} (${p.type})`}>
                   {p.name.split(" ")[0]}
                 </th>
               ))}
@@ -114,25 +117,25 @@ export default function CoverageMatrix() {
           <tbody>
             {orientation === "providersAsRows" &&
               activeProviders.map((p) => (
-                <tr key={p.id} style={{ borderBottom: `1px solid ${styles.border2}` }}>
-                  <td style={tdStyle}>{p.name}</td>
-                  <td style={tdStyle}>{p.type}</td>
-                  <td style={{ ...tdStyle, fontFamily: "'DM Mono', monospace" }}>{p.npi}</td>
+                <tr key={p.id} style={{ borderBottom: `1px solid ${theme.border2}` }}>
+                  <td style={{ ...tdStyle(theme), position: "sticky", left: 0, zIndex: 1, background: theme.bg0 }}>{p.name}</td>
+                  <td style={tdStyle(theme)}>{p.type}</td>
+                  <td style={{ ...tdStyle(theme), fontFamily: "'DM Mono', monospace" }}>{p.npi}</td>
                   {ALL_STATES.map((st) => (
-                    <td key={st} style={{ ...tdStyle, textAlign: "center", background: p.states.includes(st) ? (isOperatingState(st) ? "#14532d" : "#1e293b") : "transparent" }}>
-                      {p.states.includes(st) ? "✓" : ""}
+                    <td key={st} style={{ ...tdStyle(theme), textAlign: "center", background: getActiveStates(p).includes(st) ? (isOperatingState(st) ? theme.successBg : theme.comingSoonBg) : "transparent" }}>
+                      {getActiveStates(p).includes(st) ? "✓" : ""}
                     </td>
                   ))}
                 </tr>
               ))}
             {orientation === "statesAsRows" &&
               ALL_STATES.map((st) => (
-                <tr key={st} style={{ borderBottom: `1px solid ${styles.border2}` }}>
-                  <td style={tdStyle}>{st}</td>
-                  <td style={tdStyle}>{STATE_NAMES[st]}</td>
+                <tr key={st} style={{ borderBottom: `1px solid ${theme.border2}` }}>
+                  <td style={{ ...tdStyle(theme), position: "sticky", left: 0, zIndex: 1, background: theme.bg0 }}>{st}</td>
+                  <td style={tdStyle(theme)}>{STATE_NAMES[st]}</td>
                   {activeProviders.map((p) => (
-                    <td key={p.id} style={{ ...tdStyle, textAlign: "center", background: p.states.includes(st) ? (isOperatingState(st) ? "#14532d" : "#1e293b") : "transparent" }}>
-                      {p.states.includes(st) ? "✓" : ""}
+                    <td key={p.id} style={{ ...tdStyle(theme), textAlign: "center", background: getActiveStates(p).includes(st) ? (isOperatingState(st) ? theme.successBg : theme.comingSoonBg) : "transparent" }}>
+                      {getActiveStates(p).includes(st) ? "✓" : ""}
                     </td>
                   ))}
                 </tr>
@@ -144,5 +147,9 @@ export default function CoverageMatrix() {
   )
 }
 
-const thStyle = { padding: "8px 10px", textAlign: "left", background: styles.bg2, color: styles.muted, borderBottom: `2px solid ${styles.border1}` }
-const tdStyle = { padding: "6px 10px", borderBottom: `1px solid ${styles.border2}` }
+function thStyle(theme) {
+  return { padding: "8px 10px", textAlign: "left", background: theme.bg2, color: theme.muted, borderBottom: `2px solid ${theme.border1}` }
+}
+function tdStyle(theme) {
+  return { padding: "6px 10px", borderBottom: `1px solid ${theme.border2}` }
+}

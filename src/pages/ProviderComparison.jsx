@@ -1,11 +1,14 @@
 import { useState, useMemo } from "react"
 import { PROVIDERS } from "../data/providers"
 import { ALL_STATES, STATE_NAMES, isOperatingState } from "../data/reference"
-import { Card, PageHeader, StatePill, CredBadge, styles } from "../components/ui"
+import { Card, PageHeader, StatePill, CredBadge } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
+import { getActiveStates, getExpiredStates } from "../data/providers"
 
 const MAX_COMPARE = 3
 
 export default function ProviderComparison() {
+  const { theme } = useTheme()
   const [selectedIds, setSelectedIds] = useState([])
 
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
@@ -19,24 +22,24 @@ export default function ProviderComparison() {
 
   const allStatesInComparison = useMemo(() => {
     const set = new Set()
-    selected.forEach((p) => p.states.forEach((s) => set.add(s)))
+    selected.forEach((p) => getActiveStates(p).forEach((s) => set.add(s)))
     return [...set].sort()
   }, [selected])
 
   const overlap = useMemo(() => {
     if (selected.length < 2) return new Set()
-    let set = new Set(selected[0].states)
+    let set = new Set(getActiveStates(selected[0]))
     selected.slice(1).forEach((p) => {
-      set = new Set([...set].filter((s) => p.states.includes(s)))
+      set = new Set([...set].filter((s) => getActiveStates(p).includes(s)))
     })
     return set
   }, [selected])
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Provider Comparison" subtitle="Select 2–3 providers to compare state coverage" />
       <div style={{ marginBottom: 24 }}>
-        <label style={{ display: "block", fontSize: 12, color: styles.muted, marginBottom: 8 }}>Select providers ({selected.length}/{MAX_COMPARE})</label>
+        <label style={{ display: "block", fontSize: 12, color: theme.muted, marginBottom: 8 }}>Select providers ({selected.length}/{MAX_COMPARE})</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {activeProviders.map((p) => (
             <button
@@ -46,9 +49,9 @@ export default function ProviderComparison() {
               style={{
                 padding: "8px 14px",
                 borderRadius: 8,
-                border: `2px solid ${selectedIds.includes(p.id) ? styles.accent : styles.border1}`,
-                background: selectedIds.includes(p.id) ? `${styles.accent}20` : styles.bg2,
-                color: styles.text,
+                border: `2px solid ${selectedIds.includes(p.id) ? theme.accent : theme.border1}`,
+                background: selectedIds.includes(p.id) ? `${theme.accent}20` : theme.bg2,
+                color: theme.text,
                 cursor: "pointer",
                 display: "inline-flex",
                 alignItems: "center",
@@ -66,7 +69,7 @@ export default function ProviderComparison() {
         <>
           {selected.length >= 2 && overlap.size > 0 && (
             <Card style={{ marginBottom: 24, borderLeft: "4px solid #22c55e" }}>
-              <div style={{ fontSize: 12, color: styles.muted }}>States covered by all selected</div>
+              <div style={{ fontSize: 12, color: theme.muted }}>States covered by all selected</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
                 {[...overlap].map((st) => (
                   <StatePill key={st} state={st} />
@@ -81,10 +84,13 @@ export default function ProviderComparison() {
                   <CredBadge type={p.type} />
                   <span style={{ fontWeight: 600 }}>{p.name}</span>
                 </div>
-                <div style={{ fontSize: 12, color: styles.muted, marginBottom: 8 }}>{p.states.length} states</div>
+                <div style={{ fontSize: 12, color: theme.muted, marginBottom: 8 }}>{getActiveStates(p).length} states</div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {p.states.map((st) => (
+                  {getActiveStates(p).map((st) => (
                     <StatePill key={st} state={st} />
+                  ))}
+                  {getExpiredStates(p).map((st) => (
+                    <StatePill key={"exp-" + st} state={st} expired />
                   ))}
                 </div>
               </Card>
@@ -95,7 +101,7 @@ export default function ProviderComparison() {
 
       {selected.length === 1 && (
         <Card>
-          <div style={{ color: styles.muted }}>Select at least one more provider to compare.</div>
+          <div style={{ color: theme.muted }}>Select at least one more provider to compare.</div>
         </Card>
       )}
     </div>

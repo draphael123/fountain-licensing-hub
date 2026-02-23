@@ -8,18 +8,36 @@ import {
   COMING_SOON_STATES,
   RENEWAL_CYCLE,
 } from "../data/reference"
-import { Card, PageHeader, CredBadge, styles } from "../components/ui"
+import { getActiveStates, getActiveDea, getLicensesExpiringIn, getDeaExpiringIn } from "../data/providers"
+import { Card, PageHeader, CredBadge } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
 
 export default function Dashboard() {
+  const { theme } = useTheme()
   const [quickState, setQuickState] = useState("")
 
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
   const coveredStates = useMemo(() => {
     const set = new Set()
-    activeProviders.forEach((p) => p.states.forEach((s) => set.add(s)))
+    activeProviders.forEach((p) => getActiveStates(p).forEach((s) => set.add(s)))
     return set
   }, [activeProviders])
-  const totalDea = useMemo(() => activeProviders.reduce((n, p) => n + p.dea.length, 0), [activeProviders])
+  const totalDea = useMemo(() => activeProviders.reduce((n, p) => n + getActiveDea(p).length, 0), [activeProviders])
+
+  const expiringSoonLicenses = useMemo(() => {
+    const list = []
+    activeProviders.forEach((p) => {
+      getLicensesExpiringIn(p, 90).forEach(({ state, expires }) => list.push({ provider: p, state, expires, type: "license" }))
+      getDeaExpiringIn(p, 90).forEach(({ state, num, expires }) => list.push({ provider: p, state, num, expires, type: "dea" }))
+    })
+    return list.sort((a, b) => a.expires.localeCompare(b.expires))
+  }, [activeProviders])
+  const expiring30 = useMemo(() => {
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() + 30)
+    cutoff.setHours(23, 59, 59, 999)
+    return expiringSoonLicenses.filter((x) => new Date(x.expires) <= cutoff).length
+  }, [expiringSoonLicenses])
 
   const operatingCovered = useMemo(() => OPERATING_STATES.filter((s) => coveredStates.has(s)).length, [coveredStates])
   const comingSoonCount = COMING_SOON_STATES.length
@@ -37,7 +55,7 @@ export default function Dashboard() {
   const quickStateMatch = quickStateUpper.length === 2 && ALL_STATES.includes(quickStateUpper) ? quickStateUpper : null
   const canSeePatientsIn = quickStateMatch ? coveredStates.has(quickStateMatch) : null
   const providersInQuickState = useMemo(
-    () => (quickStateMatch ? activeProviders.filter((p) => p.states.includes(quickStateMatch)) : []),
+    () => (quickStateMatch ? activeProviders.filter((p) => getActiveStates(p).includes(quickStateMatch)) : []),
     [quickStateMatch, activeProviders]
   )
 
@@ -50,39 +68,58 @@ export default function Dashboard() {
     { path: "/dir", label: "Provider Directory", desc: "DEA, compacts, licenses", icon: "👤" },
     { path: "/dea", label: "DEA Tracker", desc: "Registrations by provider/state", icon: "💊" },
     { path: "/npi", label: "NPI Directory", desc: "NPI & contract start", icon: "🪪" },
+    { path: "/calendar", label: "Renewal Calendar", desc: "Licenses & DEA by month", icon: "📅" },
     { path: "/nlc", label: "Compacts", desc: "NLC/IMLC eligibility", icon: "🤝" },
     { path: "/ref", label: "State Boards", desc: "Board info & renewal", icon: "🏛" },
-    { path: "/expand", label: "Expansion Priorities", desc: "Coming-soon states to pursue", icon: "📈" },
     { path: "/onboard", label: "Onboarding Checklist", desc: "Licenses to close gaps", icon: "✅" },
     { path: "/compare", label: "Provider Comparison", desc: "Compare 2–3 providers", icon: "⚖" },
   ]
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Dashboard" subtitle="Fountain Licensing Hub — overview and quick links" />
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
         <Card>
-          <div style={{ fontSize: 12, color: styles.muted }}>Active providers</div>
+          <div style={{ fontSize: 12, color: theme.muted }}>Active providers</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{activeProviders.length}</div>
         </Card>
         <Card>
-          <div style={{ fontSize: 12, color: styles.muted }}>States with coverage</div>
+          <div style={{ fontSize: 12, color: theme.muted }}>States with coverage</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{coveredStates.size}</div>
         </Card>
         <Card>
-          <div style={{ fontSize: 12, color: styles.muted }}>Operating states covered</div>
+          <div style={{ fontSize: 12, color: theme.muted }}>Operating states covered</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{operatingCovered} / {OPERATING_STATES.length}</div>
         </Card>
         <Card>
-          <div style={{ fontSize: 12, color: styles.muted }}>Coming soon</div>
+          <div style={{ fontSize: 12, color: theme.muted }}>Coming soon</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{comingSoonCount}</div>
         </Card>
         <Card>
-          <div style={{ fontSize: 12, color: styles.muted }}>Total DEA registrations</div>
+          <div style={{ fontSize: 12, color: theme.muted }}>Total DEA registrations</div>
           <div style={{ fontSize: 28, fontWeight: 700 }}>{totalDea}</div>
         </Card>
+        <Card style={expiring30 > 0 ? { borderLeft: `4px solid ${theme.warning}` } : undefined}>
+          <div style={{ fontSize: 12, color: theme.muted }}>Expiring in 90 days</div>
+          <div style={{ fontSize: 28, fontWeight: 700 }}>{expiringSoonLicenses.length}</div>
+          {expiring30 > 0 && <div style={{ fontSize: 12, color: theme.warning, marginTop: 4 }}>{expiring30} in next 30 days</div>}
+        </Card>
       </div>
+
+      {expiringSoonLicenses.length > 0 && (
+        <Card style={{ marginBottom: 24, padding: 20, borderLeft: `4px solid ${theme.warning}` }}>
+          <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>Expiring soon (next 90 days)</h3>
+          <p style={{ margin: "0 0 12px", fontSize: 14, color: theme.muted }}>{expiringSoonLicenses.length} license(s) or DEA registration(s) expire in the next 90 days.</p>
+          <Link to="/calendar" style={{ color: theme.accent, fontWeight: 600 }}>View renewal calendar →</Link>
+          <ul style={{ margin: "12px 0 0", paddingLeft: 20, fontSize: 14 }}>
+            {expiringSoonLicenses.slice(0, 10).map((x, i) => (
+              <li key={i}>{x.provider.name} — {x.type === "license" ? `License ${x.state}` : `DEA ${x.state} ${x.num}`} expires {x.expires}</li>
+            ))}
+            {expiringSoonLicenses.length > 10 && <li style={{ color: theme.muted }}>+{expiringSoonLicenses.length - 10} more</li>}
+          </ul>
+        </Card>
+      )}
 
       <Card style={{ marginBottom: 32, padding: 20 }}>
         <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>Can we see patients in this state?</h3>
@@ -96,10 +133,10 @@ export default function Dashboard() {
             style={{
               width: 80,
               padding: "10px 12px",
-              background: styles.bg2,
-              border: `1px solid ${styles.border1}`,
+              background: theme.bg2,
+              border: `1px solid ${theme.border1}`,
               borderRadius: 8,
-              color: styles.text,
+              color: theme.text,
               fontSize: 14,
               textTransform: "uppercase",
             }}
@@ -108,9 +145,9 @@ export default function Dashboard() {
             <>
               <span style={{ fontWeight: 600 }}>{STATE_NAMES[quickStateMatch]}</span>
               {canSeePatientsIn ? (
-                <span style={{ color: "#22c55e" }}>Yes — {providersInQuickState.length} provider(s)</span>
+                <span style={{ color: theme.success }}>Yes — {providersInQuickState.length} provider(s)</span>
               ) : (
-                <span style={{ color: "#f87171" }}>No coverage</span>
+                <span style={{ color: theme.danger }}>No coverage</span>
               )}
               {canSeePatientsIn && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, width: "100%" }}>
@@ -132,13 +169,13 @@ export default function Dashboard() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
           {Object.entries(renewalByCycle).map(([cycle, count]) => (
             <Card key={cycle} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ color: styles.muted }}>{cycle}</span>
+              <span style={{ color: theme.muted }}>{cycle}</span>
               <span style={{ fontWeight: 700 }}>{count}</span>
-              <span style={{ fontSize: 12, color: styles.muted }}>states</span>
+              <span style={{ fontSize: 12, color: theme.muted }}>states</span>
             </Card>
           ))}
         </div>
-        <p style={{ fontSize: 12, color: styles.muted, marginTop: 8 }}>Use State Boards for board details and renewal cycles.</p>
+        <p style={{ fontSize: 12, color: theme.muted, marginTop: 8 }}>Use State Boards for board details and renewal cycles.</p>
       </div>
 
       <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>Tools</h3>
@@ -150,16 +187,17 @@ export default function Dashboard() {
             style={{
               display: "block",
               padding: 16,
-              background: styles.bg1,
-              border: `1px solid ${styles.border1}`,
+              background: theme.bg1,
+              border: `1px solid ${theme.border1}`,
               borderRadius: 8,
-              color: styles.text,
+              color: theme.text,
               textDecoration: "none",
+              boxShadow: theme.shadow,
             }}
           >
             <span style={{ fontSize: 20, marginRight: 8 }}>{icon}</span>
             <div style={{ fontWeight: 600 }}>{label}</div>
-            <div style={{ fontSize: 12, color: styles.muted, marginTop: 4 }}>{desc}</div>
+            <div style={{ fontSize: 12, color: theme.muted, marginTop: 4 }}>{desc}</div>
           </Link>
         ))}
       </div>

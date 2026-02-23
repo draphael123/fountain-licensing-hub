@@ -1,17 +1,19 @@
-import { useMemo } from "react"
-import { PROVIDERS } from "../data/providers"
+import { getActiveDea, getExpiredDea } from "../data/providers"
 import { STATE_NAMES, ALL_STATES } from "../data/reference"
-import { Card, PageHeader, CredBadge, styles } from "../components/ui"
+import { Card, PageHeader, CredBadge } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
 import { downloadCsv, toCsv } from "../utils/exportCsv"
 
 export default function DEATracker() {
+  const { theme } = useTheme()
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
 
   const byProvider = useMemo(
     () =>
       activeProviders.map((p) => ({
         ...p,
-        deaList: p.dea,
+        activeDea: getActiveDea(p),
+        expiredDea: getExpiredDea(p),
       })),
     [activeProviders]
   )
@@ -20,7 +22,7 @@ export default function DEATracker() {
     const map = {}
     ALL_STATES.forEach((st) => (map[st] = []))
     activeProviders.forEach((p) => {
-      p.dea.forEach(({ state, num }) => {
+      getActiveDea(p).forEach(({ state, num }) => {
         if (map[state]) map[state].push({ name: p.name, type: p.type, num })
       })
     })
@@ -32,13 +34,13 @@ export default function DEATracker() {
   const handleExport = () => {
     const rows = [["Provider", "Type", "State", "DEA Number"]]
     activeProviders.forEach((p) => {
-      p.dea.forEach(({ state, num }) => rows.push([p.name, p.type, state, num]))
+      getActiveDea(p).forEach(({ state, num }) => rows.push([p.name, p.type, state, num]))
     })
     downloadCsv(toCsv(rows), `dea-registrations-${new Date().toISOString().slice(0, 10)}.csv`)
   }
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="DEA Tracker" subtitle="Registrations by provider and by state" />
       <div style={{ marginBottom: 16 }}>
         <button
@@ -48,8 +50,8 @@ export default function DEATracker() {
             padding: "8px 16px",
             borderRadius: 8,
             border: "none",
-            background: styles.accent,
-            color: styles.bg0,
+            background: theme.accent,
+            color: theme.accentText,
             cursor: "pointer",
             fontWeight: 600,
           }}
@@ -57,7 +59,7 @@ export default function DEATracker() {
           Export CSV
         </button>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 24 }}>
         <div>
           <h3 style={{ marginBottom: 12, fontSize: 16 }}>By Provider</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
@@ -66,8 +68,8 @@ export default function DEATracker() {
                 key={p.id}
                 style={{
                   padding: 12,
-                  background: styles.bg2,
-                  borderBottom: `1px solid ${styles.border2}`,
+                  background: theme.bg2,
+                  borderBottom: `1px solid ${theme.border2}`,
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
@@ -77,9 +79,14 @@ export default function DEATracker() {
                 <CredBadge type={p.type} />
                 <span style={{ fontWeight: 600, minWidth: 160 }}>{p.name}</span>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {p.deaList.map(({ state, num }) => (
-                    <span key={state + num} style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, padding: "4px 8px", background: styles.bg1, borderRadius: 4 }}>
+                  {p.activeDea.map(({ state, num }) => (
+                    <span key={state + num} style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, padding: "4px 8px", background: theme.bg1, borderRadius: 4 }}>
                       {state}: {num}
+                    </span>
+                  ))}
+                  {p.expiredDea.map(({ state, num }) => (
+                    <span key={"exp-" + state + num} title={`Expired${p.deaExpirations?.[state] ? ` ${p.deaExpirations[state]}` : ""}`} style={{ fontFamily: "'DM Mono', monospace", fontSize: 12, padding: "4px 8px", background: theme.danger + "20", color: theme.danger, border: `1px solid ${theme.danger}`, borderRadius: 4 }}>
+                      {state}: {num} (expired)
                     </span>
                   ))}
                 </div>
@@ -95,20 +102,20 @@ export default function DEATracker() {
                 key={st}
                 style={{
                   padding: 12,
-                  background: styles.bg2,
-                  borderBottom: `1px solid ${styles.border2}`,
+                  background: theme.bg2,
+                  borderBottom: `1px solid ${theme.border2}`,
                 }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                   <span style={{ fontWeight: 600 }}>{st}</span>
-                  <span style={{ color: styles.muted, fontSize: 12 }}>{STATE_NAMES[st]} — {list.length} registration{list.length !== 1 ? "s" : ""}</span>
+                  <span style={{ color: theme.muted, fontSize: 12 }}>{STATE_NAMES[st]} — {list.length} registration{list.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {list.map(({ name, type, num }) => (
                     <span key={name + num} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12 }}>
                       <CredBadge type={type} />
                       <span>{name}</span>
-                      <span style={{ fontFamily: "'DM Mono', monospace", color: styles.muted }}>{num}</span>
+                      <span style={{ fontFamily: "'DM Mono', monospace", color: theme.muted }}>{num}</span>
                     </span>
                   ))}
                 </div>

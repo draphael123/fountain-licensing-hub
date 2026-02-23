@@ -1,11 +1,11 @@
 export const PROVIDERS = [
   { id:0,  name:"Doron Stember",       type:"MD", terminated:false, npi:"1902064124",  contractStart:null,        dea:[{state:"FL",num:"FS1248257"},{state:"CT",num:"FS2487925"}], states:["AL","AZ","AR","CA","CO","CT","FL","GA","ID","IL","IN","KY","ME","MD","MI","MO","MT","NE","NH","NJ","NY","NC","OH","PA","SC","TN","TX","UT","VA","WA","WI"] },
   { id:1,  name:"Tzvi Doron",          type:"DO", terminated:false, npi:"1558794776",  contractStart:"9/2/2025",  dea:[{state:"NY",num:"FD6064909"}], states:["AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","ME","MD","MI","MN","MO","MS","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"] },
-  { id:2,  name:"Lindsay Burden",      type:"NP", terminated:false, npi:"1578934873",  contractStart:"9/1/2023",  dea:[{state:"FL",num:"MB8930566"},{state:"UT",num:"MB9714406"},{state:"MD",num:"MB0364098"}], states:["AZ","CA","CO","FL","GA","IA","ID","IL","IN","KS","KY","ME","MD","MI","MN","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OR","PA","SC","TN","TX","UT","VT","VA","WA","WI","WY"] },
-  { id:3,  name:"Bill Carbonneau",     type:"NP", terminated:false, npi:"1528158714",  contractStart:"8/15/2022", dea:[{state:"FL",num:"MC0334362"},{state:"UT",num:"MC9901326"},{state:"MD",num:"MC0011522"}], states:["AZ","CA","CO","FL","IA","ID","IL","IN","KS","MA","ME","MD","MI","MN","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","SD","TX","UT","VT","VA","WA","WV","WI"] },
+  { id:2,  name:"Lindsay Burden",      type:"NP", terminated:false, npi:"1578934873",  contractStart:"9/1/2023",  dea:[{state:"FL",num:"MB8930566"},{state:"UT",num:"MB9714406"},{state:"MD",num:"MB0364098"}], states:["AZ","CA","CO","FL","GA","IA","ID","IL","IN","KS","KY","ME","MD","MI","MN","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OR","PA","SC","TN","TX","UT","VT","VA","WA","WI","WY"], deaExpirations: { UT: "2025-08-15" } },
+  { id:3,  name:"Bill Carbonneau",     type:"NP", terminated:false, npi:"1528158714",  contractStart:"8/15/2022", dea:[{state:"FL",num:"MC0334362"},{state:"UT",num:"MC9901326"},{state:"MD",num:"MC0011522"}], states:["AZ","CA","CO","FL","IA","ID","IL","IN","KS","MA","ME","MD","MI","MN","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","SD","TX","UT","VT","VA","WA","WV","WI"], licenseExpirations: { NJ: "2024-03-31" }, deaExpirations: { MD: "2024-12-01" } },
   { id:4,  name:"Summer Denny",        type:"NP", terminated:false, npi:"1740830405",  contractStart:"11/8/2023", dea:[{state:"CO",num:"MD9419777"}], states:["AZ","CA","CO","FL","ID","KY","MO","MT","NM","NV","NY","OH","OR","VA","WA"] },
-  { id:5,  name:"Victor Lopez",        type:"NP", terminated:false, npi:"1851621536",  contractStart:"3/15/2022", dea:[{state:"FL",num:"ML5090890"}], states:["AL","AZ","CA","CO","CT","FL","GA","IA","IL","IN","KY","ME","MI","MT","NJ","NM","NY","NC","OH","OR","PA","TN","TX","VA","WA","WI"] },
-  { id:6,  name:"Martin Van Dongen",   type:"NP", terminated:false, npi:"1659969863",  contractStart:"3/25/2024", dea:[{state:"FL",num:"MV6251817"}], states:["FL","ID","IL","IN","MI","MN","MT","NJ","NC","OH","PA","UT","VA","WA","WV","WI"] },
+  { id:5,  name:"Victor Lopez",        type:"NP", terminated:false, npi:"1851621536",  contractStart:"3/15/2022", dea:[{state:"FL",num:"ML5090890"}], states:["AL","AZ","CA","CO","CT","FL","GA","IA","IL","IN","KY","ME","MI","MT","NJ","NM","NY","NC","OH","OR","PA","TN","TX","VA","WA","WI"], licenseExpirations: { FL: "2024-06-01", NJ: "2024-01-15" } },
+  { id:6,  name:"Martin Van Dongen",   type:"NP", terminated:false, npi:"1659969863",  contractStart:"3/25/2024", dea:[{state:"FL",num:"MV6251817"}], states:["FL","ID","IL","IN","MI","MN","MT","NJ","NC","OH","PA","UT","VA","WA","WV","WI"], licenseExpirations: { NJ: "2023-12-01" } },
   { id:7,  name:"Tim Mack",            type:"NP", terminated:false, npi:"1104470590",  contractStart:"3/26/2024", dea:[{state:"CA",num:"MM5440033"}], states:["AZ","CA","CO","IA","IL","NE","NM","ND","OR","TX","VT"] },
   { id:8,  name:"Bryana Anderson",     type:"NP", terminated:false, npi:"1386001576",  contractStart:"5/2/2024",  dea:[{state:"TX",num:"MA4122951"}], states:["AR","CA","IA","ID","IL","IN","LA","MI","NE","NM","NY","OK","TX"] },
   { id:9,  name:"Priya Chaudhari",     type:"NP", terminated:false, npi:"1952846909",  contractStart:"5/21/2024", dea:[{state:"FL",num:"MC9110002"}], states:["AZ","FL","ID","IL","MO","OH","WI"] },
@@ -25,5 +25,80 @@ export const PROVIDERS = [
   { id:23, name:"Ashley Escoe",        type:"NP", terminated:false, npi:"1700493426",  contractStart:"9/25/2025", dea:[{state:"TX",num:"ME7323835"}], states:["AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","ME","MD","MA","MI","MN","MO","MT","NE","NV","NH","NJ","NM","NY","NC","OH","OK","OR","PA","RI","SD","TN","TX","UT","VT","VA","WA","WV","WY"] },
   { id:24, name:"Skye Sauls",          type:"NP", terminated:false, npi:"1669169207",  contractStart:"9/17/2025", dea:[{state:"FL",num:"MS8706080"}], states:["FL","NM","NV","OH","VA"] },
 ]
+
+/** YYYY-MM-DD at start of day for comparison */
+const today = () => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
+/** True if the provider's license in that state has an expiration date in the past */
+export function isLicenseExpired(provider, stateCode) {
+  const exp = provider.licenseExpirations?.[stateCode]
+  if (!exp) return false
+  return new Date(exp) < today()
+}
+
+/** States where the provider has an active (non-expired) license. Use for coverage/counts. */
+export function getActiveStates(provider) {
+  if (!provider.states) return []
+  return provider.states.filter((st) => !isLicenseExpired(provider, st))
+}
+
+/** States where the provider's license is expired. Show in UI with red highlight, do not count. */
+export function getExpiredStates(provider) {
+  if (!provider.states) return []
+  return provider.states.filter((st) => isLicenseExpired(provider, st))
+}
+
+/** True if the provider's DEA registration in that state has an expiration date in the past */
+export function isDeaExpired(provider, stateCode) {
+  const exp = provider.deaExpirations?.[stateCode]
+  if (!exp) return false
+  return new Date(exp) < today()
+}
+
+/** DEA registrations that are active (not expired). Use for counts and display. */
+export function getActiveDea(provider) {
+  if (!provider.dea) return []
+  return provider.dea.filter(({ state }) => !isDeaExpired(provider, state))
+}
+
+/** DEA registrations that are expired. Show in red, do not count. */
+export function getExpiredDea(provider) {
+  if (!provider.dea) return []
+  return provider.dea.filter(({ state }) => isDeaExpired(provider, state))
+}
+
+/** License expirations within the next N days (including today). Returns { state, expires }[]. */
+export function getLicensesExpiringIn(provider, days) {
+  if (!provider.states || !provider.licenseExpirations) return []
+  const end = new Date(today())
+  end.setDate(end.getDate() + days)
+  return provider.states
+    .filter((st) => {
+      const exp = provider.licenseExpirations?.[st]
+      if (!exp) return false
+      const d = new Date(exp)
+      return d >= today() && d <= end
+    })
+    .map((st) => ({ state: st, expires: provider.licenseExpirations[st] }))
+}
+
+/** DEA expirations within the next N days. Returns { state, num, expires }[]. */
+export function getDeaExpiringIn(provider, days) {
+  if (!provider.dea || !provider.deaExpirations) return []
+  const end = new Date(today())
+  end.setDate(end.getDate() + days)
+  return provider.dea
+    .filter(({ state }) => {
+      const exp = provider.deaExpirations?.[state]
+      if (!exp) return false
+      const d = new Date(exp)
+      return d >= today() && d <= end
+    })
+    .map(({ state, num }) => ({ state, num, expires: provider.deaExpirations[state] }))
+}
 
 export const DEFAULT_PATIENT_STATES = ["CA","TX","FL","NY","PA","IL","OH","GA","NC","MI","NJ","VA","WA","AZ","TN","MA","IN","MO","MD","WI","CO","MN"]

@@ -1,7 +1,9 @@
 import { useMemo } from "react"
 import { PROVIDERS } from "../data/providers"
+import { getActiveStates } from "../data/providers"
 import { STATE_NAMES, ALL_STATES, isOperatingState } from "../data/reference"
-import { Card, PageHeader, styles } from "../components/ui"
+import { Card, PageHeader } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
 
 const ZONE_COLORS = {
   none: "#7f1d1d",
@@ -20,13 +22,14 @@ function getZone(count) {
 }
 
 export default function RedundancyMap() {
+  const { theme } = useTheme()
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
 
   const stateCounts = useMemo(() => {
     const map = {}
     ALL_STATES.forEach((st) => (map[st] = { count: 0, names: [] }))
     activeProviders.forEach((p) => {
-      p.states.forEach((st) => {
+      getActiveStates(p).forEach((st) => {
         if (map[st]) {
           map[st].count++
           map[st].names.push(p.name)
@@ -45,7 +48,7 @@ export default function RedundancyMap() {
   }, [stateCounts])
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Redundancy Map" subtitle="Provider count by state (heat zones)" />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
         {[
@@ -58,7 +61,7 @@ export default function RedundancyMap() {
           <Card key={key} style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <div style={{ width: 16, height: 16, borderRadius: 4, background: color }} />
             <span>{label}</span>
-            <span style={{ color: styles.muted }}>{zoneCounts[key]}</span>
+            <span style={{ color: theme.muted }}>{zoneCounts[key]}</span>
           </Card>
         ))}
       </div>

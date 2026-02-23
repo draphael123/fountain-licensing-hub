@@ -1,9 +1,12 @@
 import { useState, useMemo } from "react"
 import { PROVIDERS } from "../data/providers"
 import { BOARD_INFO, RENEWAL_CYCLE, NLC_STATES, IMLC_STATES, ALL_STATES, STATE_NAMES, isOperatingState } from "../data/reference"
-import { Card, PageHeader, StatePill, styles } from "../components/ui"
+import { Card, PageHeader, StatePill } from "../components/ui"
+import { useTheme } from "../context/ThemeContext"
+import { getActiveStates } from "../data/providers"
 
 export default function StateReference() {
+  const { theme } = useTheme()
   const [search, setSearch] = useState("")
   const [onlyWithProviders, setOnlyWithProviders] = useState(false)
 
@@ -11,7 +14,7 @@ export default function StateReference() {
     const map = {}
     ALL_STATES.forEach((st) => (map[st] = 0))
     PROVIDERS.filter((p) => !p.terminated).forEach((p) =>
-      p.states.forEach((st) => {
+      getActiveStates(p).forEach((st) => {
         if (map[st] !== undefined) map[st]++
       })
     )
@@ -29,7 +32,7 @@ export default function StateReference() {
   }, [search, onlyWithProviders, activeCountByState])
 
   return (
-    <div style={{ padding: 24, background: styles.bg0, minHeight: "100vh", color: styles.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="State Boards" subtitle="Board info, renewal cycle, compacts, provider count" />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", marginBottom: 24 }}>
         <input
@@ -40,15 +43,15 @@ export default function StateReference() {
           style={{
             minWidth: 200,
             padding: "10px 14px",
-            background: styles.bg1,
-            border: `1px solid ${styles.border1}`,
+            background: theme.bg1,
+            border: `1px solid ${theme.border1}`,
             borderRadius: 8,
-            color: styles.text,
+            color: theme.text,
             fontSize: 14,
           }}
         />
         <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-          <input type="checkbox" checked={onlyWithProviders} onChange={(e) => setOnlyWithProviders(e.target.checked)} style={{ accentColor: styles.accent }} />
+          <input type="checkbox" checked={onlyWithProviders} onChange={(e) => setOnlyWithProviders(e.target.checked)} style={{ accentColor: theme.accent }} />
           <span>Only states with active providers</span>
         </label>
       </div>
@@ -79,16 +82,16 @@ export default function StateReference() {
                 {count === 0 && operating && (
                   <span style={{ fontSize: 11, padding: "2px 6px", background: "#7f1d1d", color: "#fca5a5", borderRadius: 4 }}>No providers</span>
                 )}
-                {nlc && <span style={{ fontSize: 11, padding: "2px 6px", background: "#1e3a5f", color: styles.accent, borderRadius: 4 }}>NLC</span>}
-                {imlc && <span style={{ fontSize: 11, padding: "2px 6px", background: "#1e3a5f", color: styles.accent, borderRadius: 4 }}>IMLC</span>}
-                <span style={{ marginLeft: "auto", color: styles.muted }}>{renewal}</span>
-                <span style={{ color: styles.muted }}>{count} provider{count !== 1 ? "s" : ""}</span>
+                {nlc && <span style={{ fontSize: 11, padding: "2px 6px", background: "#1e3a5f", color: theme.accent, borderRadius: 4 }}>NLC</span>}
+                {imlc && <span style={{ fontSize: 11, padding: "2px 6px", background: "#1e3a5f", color: theme.accent, borderRadius: 4 }}>IMLC</span>}
+                <span style={{ marginLeft: "auto", color: theme.muted }}>{renewal}</span>
+                <span style={{ color: theme.muted }}>{count} provider{count !== 1 ? "s" : ""}</span>
               </div>
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 14 }}>
-                <a href={info.url} target="_blank" rel="noopener noreferrer" style={{ color: styles.accent }}>
+                <a href={info.url} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent }}>
                   {info.url}
                 </a>
-                <span style={{ color: styles.muted }}>{info.phone}</span>
+                <span style={{ color: theme.muted }}>{info.phone}</span>
               </div>
             </Card>
           )
