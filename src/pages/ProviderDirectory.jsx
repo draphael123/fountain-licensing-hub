@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { PROVIDERS } from "../data/providers"
 import { getActiveStates, getExpiredStates, getActiveDea, getExpiredDea, getLicensesExpiringIn, getDeaExpiringIn, getCeuStatus } from "../data/providers"
 import { NLC_STATES, IMLC_STATES, STATE_NAMES } from "../data/reference"
-import { Card, PageHeader, StatePill, CredBadge } from "../components/ui"
+import { Card, PageHeader, StatePill, CredBadge, StateSelect } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
 import { downloadCsv, toCsv, buildFullProviderExportRows } from "../utils/exportCsv"
 
@@ -12,6 +12,8 @@ export default function ProviderDirectory() {
   const [search, setSearch] = useState("")
   const [credFilter, setCredFilter] = useState("All") // All | MD | DO | NP
   const [expiringFilter, setExpiringFilter] = useState("all") // all | 30 | 60 | 90
+  const [stateFilter, setStateFilter] = useState([]) // licensed in any of these states
+  const [sortBy, setSortBy] = useState("name") // name | nameDesc | stateCount
   const [expandedId, setExpandedId] = useState(null)
 
   const filtered = useMemo(() => {
@@ -21,12 +23,23 @@ export default function ProviderDirectory() {
       const q = search.toLowerCase()
       list = list.filter((p) => p.name.toLowerCase().includes(q) || p.npi.includes(q))
     }
+    if (stateFilter.length > 0) {
+      list = list.filter((p) => stateFilter.some((st) => getActiveStates(p).includes(st)))
+    }
     if (expiringFilter !== "all") {
       const days = Number(expiringFilter)
       list = list.filter((p) => getLicensesExpiringIn(p, days).length > 0 || getDeaExpiringIn(p, days).length > 0)
     }
-    return list
-  }, [search, credFilter, expiringFilter])
+    const sorted = [...list].sort((a, b) => {
+      const aStates = getActiveStates(a).length
+      const bStates = getActiveStates(b).length
+      if (sortBy === "name") return a.name.localeCompare(b.name)
+      if (sortBy === "nameDesc") return b.name.localeCompare(a.name)
+      if (sortBy === "stateCount") return bStates - aStates || a.name.localeCompare(b.name)
+      return 0
+    })
+    return sorted
+  }, [search, credFilter, expiringFilter, stateFilter, sortBy])
 
   const compactStatesFor = (p) => (p.type === "NP" ? NLC_STATES : IMLC_STATES)
 
@@ -86,6 +99,24 @@ export default function ProviderDirectory() {
             <option value="30">Next 30 days</option>
             <option value="60">Next 60 days</option>
             <option value="90">Next 90 days</option>
+          </select>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: theme.muted }}>
+          Licensed in state:
+          <div style={{ minWidth: 200 }}>
+            <StateSelect selected={stateFilter} onChange={setStateFilter} placeholder="Any" />
+          </div>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: theme.muted }}>
+          Sort:
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            style={{ padding: "6px 10px", borderRadius: 6, border: `1px solid ${theme.border1}`, background: theme.bg1, color: theme.text, fontSize: 14 }}
+          >
+            <option value="name">Name A–Z</option>
+            <option value="nameDesc">Name Z–A</option>
+            <option value="stateCount">State count (high first)</option>
           </select>
         </label>
         <button

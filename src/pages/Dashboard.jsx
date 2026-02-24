@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { PROVIDERS } from "../data/providers"
 import {
@@ -11,11 +11,36 @@ import {
 import { getActiveStates, getActiveDea, getLicensesExpiringIn, getDeaExpiringIn, getCeuStatus } from "../data/providers"
 import { Card, PageHeader, CredBadge } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
-import { downloadCsv, toCsv, buildFullProviderExportRows } from "../utils/exportCsv"
+import { downloadCsv, toCsv, buildFullProviderExportRows, buildDueSoonExportRows } from "../utils/exportCsv"
+
+const DASHBOARD_STORAGE_KEY = "licensing-hub-dashboard"
+const DEFAULT_STAT_ORDER = ["active", "covered", "operating", "coming", "dea", "expiring"]
+
+function loadDashboardConfig() {
+  try {
+    const raw = localStorage.getItem(DASHBOARD_STORAGE_KEY)
+    if (raw) {
+      const p = JSON.parse(raw)
+      if (Array.isArray(p.statOrder)) return { statOrder: p.statOrder, visibleStats: p.visibleStats || p.statOrder }
+    }
+  } catch (_) {}
+  return { statOrder: DEFAULT_STAT_ORDER, visibleStats: DEFAULT_STAT_ORDER }
+}
 
 export default function Dashboard() {
   const { theme } = useTheme()
   const [quickState, setQuickState] = useState("")
+  const [dashboardConfig, setDashboardConfig] = useState(() => loadDashboardConfig())
+  const [customizeOpen, setCustomizeOpen] = useState(false)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DASHBOARD_STORAGE_KEY, JSON.stringify({
+        statOrder: dashboardConfig.statOrder,
+        visibleStats: dashboardConfig.visibleStats,
+      }))
+    } catch (_) {}
+  }, [dashboardConfig])
 
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
   const coveredStates = useMemo(() => {
@@ -81,6 +106,14 @@ export default function Dashboard() {
     const rows = buildFullProviderExportRows(activeProviders, getActiveStates, getActiveDea, getCeuStatus)
     downloadCsv(toCsv(rows), `providers-full-export-${new Date().toISOString().slice(0, 10)}.csv`)
   }
+  const handleExportDueSoon30 = () => {
+    const rows = buildDueSoonExportRows(dueSoon30, [])
+    downloadCsv(toCsv(rows), `due-soon-30d-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+  const handleExportExpiring90 = () => {
+    const rows = buildDueSoonExportRows([], expiringSoonLicenses)
+    downloadCsv(toCsv(rows), `expiring-90d-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
 
   const linkCards = [
     { path: "/gap", label: "Gap Analyzer", desc: "Coverage gaps by state & provider", icon: "⚖" },
@@ -95,8 +128,24 @@ export default function Dashboard() {
     { path: "/ceu", label: "CEU Tracker", desc: "Continuing education hours by provider", icon: "📚" },
     { path: "/nlc", label: "Compacts", desc: "NLC/IMLC eligibility", icon: "🤝" },
     { path: "/ref", label: "State Boards", desc: "Board info & renewal", icon: "🏛" },
+    { path: "/states", label: "By State", desc: "Providers by state", icon: "🗺" },
     { path: "/compare", label: "Provider Comparison", desc: "Compare 2–3 providers", icon: "⚖" },
   ]
+
+  const statCardDefs = {
+    active: { label: "Active providers", value: activeProviders.length },
+    covered: { label: "States with coverage", value: coveredStates.size },
+    operating: { label: "Operating states covered", value: `${operatingCovered} / ${OPERATING_STATES.length}` },
+    coming: { label: "Coming soon", value: comingSoonCount },
+    dea: { label: "Total DEA registrations", value: totalDea },
+    expiring: {
+      label: "Expiring in 90 days",
+      value: expiringSoonLicenses.length,
+      extra: expiring30 > 0 ? `${expiring30} in next 30 days` : null,
+      warn: expiring30 > 0,
+    },
+  }
+  const visibleOrder = dashboardConfig.statOrder.filter((id) => dashboardConfig.visibleStats.includes(id))
 
   return (
     <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
@@ -118,34 +167,108 @@ export default function Dashboard() {
         >
           Export full provider list (CSV)
         </button>
+        <button
+          type="button"
+          onClick={handleExportDueSoon30}
+          style={{
+            marginLeft: 8,
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: `1px solid ${theme.border1}`,
+            background: theme.bg2,
+            color: theme.text,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Export due soon (30d CSV)
+        </button>
+        <button
+          type="button"
+          onClick={handleExportExpiring90}
+          style={{
+            marginLeft: 8,
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: `1px solid ${theme.border1}`,
+            background: theme.bg2,
+            color: theme.text,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Export expiring (90d CSV)
+        </button>
       </div>
 
+      <div className="no-print" style={{ marginBottom: 16 }}>
+        <button
+          type="button"
+          onClick={() => setCustomizeOpen((o) => !o)}
+          style={{
+            padding: "6px 12px",
+            borderRadius: 6,
+            border: `1px solid ${theme.border1}`,
+            background: theme.bg2,
+            color: theme.text,
+            fontSize: 13,
+            cursor: "pointer",
+          }}
+        >
+          {customizeOpen ? "Done customizing" : "Customize dashboard"}
+        </button>
+      </div>
+
+      {customizeOpen && (
+        <Card className="no-print" style={{ marginBottom: 24, padding: 16 }}>
+          <h4 style={{ margin: "0 0 12px", fontSize: 14 }}>Stat cards: show and reorder</h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {dashboardConfig.statOrder.map((id, i) => {
+              const def = statCardDefs[id]
+              if (!def) return null
+              const visible = dashboardConfig.visibleStats.includes(id)
+              return (
+                <div key={id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, cursor: "pointer", minWidth: 200 }}>
+                    <input type="checkbox" checked={visible} onChange={() => {
+                      setDashboardConfig((c) => ({
+                        ...c,
+                        visibleStats: visible ? c.visibleStats.filter((x) => x !== id) : [...c.visibleStats, id],
+                      }))
+                    }} style={{ accentColor: theme.accent }} />
+                    <span>{def.label}</span>
+                  </label>
+                  <button type="button" aria-label="Move up" disabled={i === 0} onClick={() => {
+                    if (i === 0) return
+                    const next = [...dashboardConfig.statOrder]
+                    ;[next[i - 1], next[i]] = [next[i], next[i - 1]]
+                    setDashboardConfig((c) => ({ ...c, statOrder: next }))
+                  }} style={{ padding: "4px 8px", fontSize: 12 }}>↑</button>
+                  <button type="button" aria-label="Move down" disabled={i === dashboardConfig.statOrder.length - 1} onClick={() => {
+                    if (i >= dashboardConfig.statOrder.length - 1) return
+                    const next = [...dashboardConfig.statOrder]
+                    ;[next[i], next[i + 1]] = [next[i + 1], next[i]]
+                    setDashboardConfig((c) => ({ ...c, statOrder: next }))
+                  }} style={{ padding: "4px 8px", fontSize: 12 }}>↓</button>
+                </div>
+              )
+            })}
+          </div>
+        </Card>
+      )}
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
-        <Card>
-          <div style={{ fontSize: 12, color: theme.muted }}>Active providers</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{activeProviders.length}</div>
-        </Card>
-        <Card>
-          <div style={{ fontSize: 12, color: theme.muted }}>States with coverage</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{coveredStates.size}</div>
-        </Card>
-        <Card>
-          <div style={{ fontSize: 12, color: theme.muted }}>Operating states covered</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{operatingCovered} / {OPERATING_STATES.length}</div>
-        </Card>
-        <Card>
-          <div style={{ fontSize: 12, color: theme.muted }}>Coming soon</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{comingSoonCount}</div>
-        </Card>
-        <Card>
-          <div style={{ fontSize: 12, color: theme.muted }}>Total DEA registrations</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{totalDea}</div>
-        </Card>
-        <Card style={expiring30 > 0 ? { borderLeft: `4px solid ${theme.warning}` } : undefined}>
-          <div style={{ fontSize: 12, color: theme.muted }}>Expiring in 90 days</div>
-          <div style={{ fontSize: 28, fontWeight: 700 }}>{expiringSoonLicenses.length}</div>
-          {expiring30 > 0 && <div style={{ fontSize: 12, color: theme.warning, marginTop: 4 }}>{expiring30} in next 30 days</div>}
-        </Card>
+        {visibleOrder.map((id) => {
+          const def = statCardDefs[id]
+          if (!def) return null
+          return (
+            <Card key={id} style={def.warn ? { borderLeft: `4px solid ${theme.warning}` } : undefined}>
+              <div style={{ fontSize: 12, color: theme.muted }}>{def.label}</div>
+              <div style={{ fontSize: 28, fontWeight: 700 }}>{def.value}</div>
+              {def.extra && <div style={{ fontSize: 12, color: theme.warning, marginTop: 4 }}>{def.extra}</div>}
+            </Card>
+          )
+        })}
       </div>
 
       {dueSoon30.length > 0 && (

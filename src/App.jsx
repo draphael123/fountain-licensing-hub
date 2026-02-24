@@ -17,7 +17,10 @@ import StateReference from "./pages/StateReference"
 import ProviderComparison from "./pages/ProviderComparison"
 import RenewalCalendar from "./pages/RenewalCalendar"
 import CEUTracker from "./pages/CEUTracker"
+import ProviderDetail from "./pages/ProviderDetail"
+import StateView from "./pages/StateView"
 import { PROVIDERS } from "./data/providers"
+import Footer from "./components/Footer"
 
 const nav = [
   { path: "/", label: "Dashboard", icon: "🏠" },
@@ -33,6 +36,7 @@ const nav = [
   { path: "/ceu", label: "CEU", icon: "📚" },
   { path: "/nlc", label: "Compacts", icon: "🤝" },
   { path: "/ref", label: "State Boards", icon: "🏛" },
+  { path: "/states", label: "By State", icon: "🗺" },
   { path: "/compare", label: "Compare", icon: "⚖" },
 ]
 
@@ -204,7 +208,8 @@ function Layout({ children }) {
           )}
         </div>
       </nav>
-      {children}
+      <div style={{ flex: 1 }}>{children}</div>
+      <Footer />
     </div>
   )
 }
@@ -225,6 +230,7 @@ function App() {
         <Route path="/npi" element={<NPIDirectory />} />
         <Route path="/nlc" element={<CompactEligibility />} />
         <Route path="/ref" element={<StateReference />} />
+        <Route path="/states" element={<StateView />} />
         <Route path="/compare" element={<ProviderComparison />} />
         <Route path="/calendar" element={<RenewalCalendar />} />
         <Route path="/ceu" element={<CEUTracker />} />

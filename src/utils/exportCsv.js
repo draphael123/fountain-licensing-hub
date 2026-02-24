@@ -61,3 +61,19 @@ export function buildFullProviderExportRows(providers, getActiveStates, getActiv
   })
   return [header, ...rows]
 }
+
+/** Rows for due-soon export: Type, Provider, State/Credential, Expiration */
+export function buildDueSoonExportRows(dueSoon30Items, expiring90Items) {
+  const header = ["Type", "Provider", "Credential/State", "Expiration"]
+  const rows = []
+  dueSoon30Items.forEach((x) => {
+    if (x.type === "license") rows.push(["License (30d)", x.provider.name, x.state, x.expires])
+    else if (x.type === "dea") rows.push(["DEA (30d)", x.provider.name, `${x.state} ${x.num}`, x.expires])
+    else if (x.type === "ceu") rows.push(["CEU (30d)", x.provider.name, "Cycle end", x.expires])
+  })
+  expiring90Items.forEach((x) => {
+    if (x.type === "license") rows.push(["License (90d)", x.provider.name, x.state, x.expires])
+    else rows.push(["DEA (90d)", x.provider.name, `${x.state} ${x.num || ""}`, x.expires])
+  })
+  return [header, ...rows]
+}

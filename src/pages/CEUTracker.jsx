@@ -16,6 +16,8 @@ const FILTERS = [
 export default function CEUTracker() {
   const { theme } = useTheme()
   const [filter, setFilter] = useState("with-data")
+  const [sortKey, setSortKey] = useState("name") // name | type | cycleEnd | required | completed | pct | status
+  const [sortAsc, setSortAsc] = useState(true)
 
   const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
 
@@ -34,6 +36,41 @@ export default function CEUTracker() {
     if (filter === "no-data") return rows.filter((r) => r.ceu == null)
     return rows
   }, [rows, filter])
+
+  const sortedRows = useMemo(() => {
+    const list = [...filtered]
+    list.sort((a, b) => {
+      let va = a.provider.name
+      let vb = b.provider.name
+      if (sortKey === "type") {
+        va = a.provider.type
+        vb = b.provider.type
+      } else if (sortKey === "cycleEnd") {
+        va = a.ceu?.cycleEnd ?? ""
+        vb = b.ceu?.cycleEnd ?? ""
+      } else if (sortKey === "required") {
+        va = a.ceu?.required ?? 0
+        vb = b.ceu?.required ?? 0
+      } else if (sortKey === "completed") {
+        va = a.ceu?.completed ?? 0
+        vb = b.ceu?.completed ?? 0
+      } else if (sortKey === "pct") {
+        va = a.ceu?.pct ?? 0
+        vb = b.ceu?.pct ?? 0
+      } else if (sortKey === "status") {
+        va = a.ceu?.isComplete ? 1 : 0
+        vb = b.ceu?.isComplete ? 1 : 0
+      }
+      const cmp = typeof va === "string" ? va.localeCompare(vb) : va - vb
+      return sortAsc ? cmp : -cmp
+    })
+    return list
+  }, [filtered, sortKey, sortAsc])
+
+  const handleSort = (key) => {
+    if (sortKey === key) setSortAsc((a) => !a)
+    else setSortKey(key)
+  }
 
   const stats = useMemo(() => {
     const withData = rows.filter((r) => r.ceu != null)
@@ -150,17 +187,17 @@ export default function CEUTracker() {
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 560 }}>
             <thead>
               <tr style={{ background: theme.bg2, borderBottom: `2px solid ${theme.border1}` }}>
-                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Provider</th>
-                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Type</th>
-                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Cycle end</th>
-                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Required</th>
-                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Completed</th>
-                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Progress</th>
-                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600 }}>Status</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("name")}>Provider {sortKey === "name" && (sortAsc ? "↑" : "↓")}</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("type")}>Type {sortKey === "type" && (sortAsc ? "↑" : "↓")}</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("cycleEnd")}>Cycle end {sortKey === "cycleEnd" && (sortAsc ? "↑" : "↓")}</th>
+                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("required")}>Required {sortKey === "required" && (sortAsc ? "↑" : "↓")}</th>
+                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("completed")}>Completed {sortKey === "completed" && (sortAsc ? "↑" : "↓")}</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("pct")}>Progress {sortKey === "pct" && (sortAsc ? "↑" : "↓")}</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: 12, color: theme.muted, fontWeight: 600, cursor: "pointer" }} onClick={() => handleSort("status")}>Status {sortKey === "status" && (sortAsc ? "↑" : "↓")}</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(({ provider, ceu }) => (
+              {sortedRows.map(({ provider, ceu }) => (
                 <tr key={provider.id} style={{ borderBottom: `1px solid ${theme.border2}` }}>
                   <td style={{ padding: "12px 16px" }}>
                     <Link to={`/provider/${provider.id}`} style={{ color: theme.accent, textDecoration: "none", fontWeight: 500 }}>
