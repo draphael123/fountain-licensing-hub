@@ -24,3 +24,40 @@ function escapeCsvCell(value) {
 export function toCsv(rows) {
   return rows.map((row) => row.map(escapeCsvCell).join(",")).join("\r\n")
 }
+
+/**
+ * Build full provider export rows for CSV.
+ */
+export function buildFullProviderExportRows(providers, getActiveStates, getActiveDea, getCeuStatus) {
+  const header = [
+    "Name", "NPI", "Type", "Terminated", "Contract Start",
+    "States", "State Count",
+    "DEA (State: Number)", "DEA Expirations",
+    "License Expirations",
+    "CEU Cycle End", "CEU Required", "CEU Completed", "CEU Status",
+  ]
+  const rows = providers.map((p) => {
+    const states = getActiveStates(p)
+    const dea = getActiveDea(p)
+    const deaExp = p.deaExpirations ? Object.entries(p.deaExpirations).filter(([, exp]) => exp).map(([st, d]) => `${st}:${d}`).join("; ") : ""
+    const licExp = p.licenseExpirations ? Object.entries(p.licenseExpirations).filter(([, exp]) => exp).map(([st, d]) => `${st}:${d}`).join("; ") : ""
+    const ceu = getCeuStatus(p)
+    return [
+      p.name,
+      p.npi ?? "",
+      p.type ?? "",
+      p.terminated ? "Yes" : "No",
+      p.contractStart ?? "",
+      states.join("; "),
+      states.length,
+      dea.map(({ state, num }) => `${state}:${num}`).join("; "),
+      deaExp,
+      licExp,
+      ceu?.cycleEnd ?? "",
+      ceu?.required ?? "",
+      ceu?.completed ?? "",
+      ceu ? (ceu.isComplete ? "Complete" : "In progress") : "",
+    ]
+  })
+  return [header, ...rows]
+}

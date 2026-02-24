@@ -8,9 +8,10 @@ import {
   COMING_SOON_STATES,
   RENEWAL_CYCLE,
 } from "../data/reference"
-import { getActiveStates, getActiveDea, getLicensesExpiringIn, getDeaExpiringIn } from "../data/providers"
+import { getActiveStates, getActiveDea, getLicensesExpiringIn, getDeaExpiringIn, getCeuStatus } from "../data/providers"
 import { Card, PageHeader, CredBadge } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
+import { downloadCsv, toCsv, buildFullProviderExportRows } from "../utils/exportCsv"
 
 export default function Dashboard() {
   const { theme } = useTheme()
@@ -39,6 +40,23 @@ export default function Dashboard() {
     return expiringSoonLicenses.filter((x) => new Date(x.expires) <= cutoff).length
   }, [expiringSoonLicenses])
 
+  const dueSoon30 = useMemo(() => {
+    const cutoff = new Date()
+    cutoff.setDate(cutoff.getDate() + 30)
+    cutoff.setHours(23, 59, 59, 999)
+    const items = []
+    activeProviders.forEach((p) => {
+      getLicensesExpiringIn(p, 30).forEach(({ state, expires }) => items.push({ provider: p, type: "license", state, expires }))
+      getDeaExpiringIn(p, 30).forEach(({ state, num, expires }) => items.push({ provider: p, type: "dea", state, num, expires }))
+      const ceu = getCeuStatus(p)
+      if (ceu?.cycleEnd) {
+        const end = new Date(ceu.cycleEnd)
+        if (end <= cutoff && !ceu.isComplete) items.push({ provider: p, type: "ceu", expires: ceu.cycleEnd })
+      }
+    })
+    return items.sort((a, b) => (a.expires || "").localeCompare(b.expires || ""))
+  }, [activeProviders])
+
   const operatingCovered = useMemo(() => OPERATING_STATES.filter((s) => coveredStates.has(s)).length, [coveredStates])
   const comingSoonCount = COMING_SOON_STATES.length
 
@@ -59,6 +77,11 @@ export default function Dashboard() {
     [quickStateMatch, activeProviders]
   )
 
+  const handleExportAll = () => {
+    const rows = buildFullProviderExportRows(activeProviders, getActiveStates, getActiveDea, getCeuStatus)
+    downloadCsv(toCsv(rows), `providers-full-export-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
   const linkCards = [
     { path: "/gap", label: "Gap Analyzer", desc: "Coverage gaps by state & provider", icon: "⚖" },
     { path: "/lookup", label: "Patient Lookup", desc: "Who can see patients where", icon: "🔍" },
@@ -69,6 +92,7 @@ export default function Dashboard() {
     { path: "/dea", label: "DEA Tracker", desc: "Registrations by provider/state", icon: "💊" },
     { path: "/npi", label: "NPI Directory", desc: "NPI & contract start", icon: "🪪" },
     { path: "/calendar", label: "Renewal Calendar", desc: "Licenses & DEA by month", icon: "📅" },
+    { path: "/ceu", label: "CEU Tracker", desc: "Continuing education hours by provider", icon: "📚" },
     { path: "/nlc", label: "Compacts", desc: "NLC/IMLC eligibility", icon: "🤝" },
     { path: "/ref", label: "State Boards", desc: "Board info & renewal", icon: "🏛" },
     { path: "/compare", label: "Provider Comparison", desc: "Compare 2–3 providers", icon: "⚖" },
@@ -77,6 +101,24 @@ export default function Dashboard() {
   return (
     <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Dashboard" subtitle="Fountain Licensing Hub — overview and quick links" />
+      <div className="no-print" style={{ marginBottom: 24 }}>
+        <button
+          type="button"
+          onClick={handleExportAll}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: "none",
+            background: theme.accent,
+            color: theme.accentText,
+            fontSize: 14,
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Export full provider list (CSV)
+        </button>
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12, marginBottom: 32 }}>
         <Card>
@@ -106,6 +148,30 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {dueSoon30.length > 0 && (
+        <Card style={{ marginBottom: 24, padding: 20, borderLeft: `4px solid ${theme.warning}` }}>
+          <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>Due in 30 days</h3>
+          <p style={{ margin: "0 0 12px", fontSize: 14, color: theme.muted }}>
+            Licenses, DEA registrations, or CEU cycles due in the next 30 days.
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 8 }}>
+            <Link to="/calendar" style={{ color: theme.accent, fontWeight: 600 }}>Renewal calendar →</Link>
+            <Link to="/ceu" style={{ color: theme.accent, fontWeight: 600 }}>CEU tracker →</Link>
+          </div>
+          <ul style={{ margin: "12px 0 0", paddingLeft: 20, fontSize: 14 }}>
+            {dueSoon30.map((x, i) => (
+              <li key={i}>
+                <Link to={`/provider/${x.provider.id}`} style={{ color: theme.accent, textDecoration: "none" }}>{x.provider.name}</Link>
+                {" — "}
+                {x.type === "license" && `License ${x.state} expires ${x.expires}`}
+                {x.type === "dea" && `DEA ${x.state} ${x.num} expires ${x.expires}`}
+                {x.type === "ceu" && `CEU cycle ends ${x.expires}`}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       {expiringSoonLicenses.length > 0 && (
         <Card style={{ marginBottom: 24, padding: 20, borderLeft: `4px solid ${theme.warning}` }}>
           <h3 style={{ margin: "0 0 12px", fontSize: 16 }}>Expiring soon (next 90 days)</h3>
@@ -113,7 +179,10 @@ export default function Dashboard() {
           <Link to="/calendar" style={{ color: theme.accent, fontWeight: 600 }}>View renewal calendar →</Link>
           <ul style={{ margin: "12px 0 0", paddingLeft: 20, fontSize: 14 }}>
             {expiringSoonLicenses.slice(0, 10).map((x, i) => (
-              <li key={i}>{x.provider.name} — {x.type === "license" ? `License ${x.state}` : `DEA ${x.state} ${x.num}`} expires {x.expires}</li>
+              <li key={i}>
+                <Link to={`/provider/${x.provider.id}`} style={{ color: theme.accent, textDecoration: "none" }}>{x.provider.name}</Link>
+                {" — "}{x.type === "license" ? `License ${x.state}` : `DEA ${x.state} ${x.num}`} expires {x.expires}
+              </li>
             ))}
             {expiringSoonLicenses.length > 10 && <li style={{ color: theme.muted }}>+{expiringSoonLicenses.length - 10} more</li>}
           </ul>

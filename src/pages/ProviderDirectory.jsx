@@ -1,9 +1,11 @@
 import { useState, useMemo } from "react"
+import { Link } from "react-router-dom"
 import { PROVIDERS } from "../data/providers"
-import { getActiveStates, getExpiredStates, getActiveDea, getExpiredDea, getLicensesExpiringIn, getDeaExpiringIn } from "../data/providers"
+import { getActiveStates, getExpiredStates, getActiveDea, getExpiredDea, getLicensesExpiringIn, getDeaExpiringIn, getCeuStatus } from "../data/providers"
 import { NLC_STATES, IMLC_STATES, STATE_NAMES } from "../data/reference"
 import { Card, PageHeader, StatePill, CredBadge } from "../components/ui"
 import { useTheme } from "../context/ThemeContext"
+import { downloadCsv, toCsv, buildFullProviderExportRows } from "../utils/exportCsv"
 
 export default function ProviderDirectory() {
   const { theme } = useTheme()
@@ -28,10 +30,17 @@ export default function ProviderDirectory() {
 
   const compactStatesFor = (p) => (p.type === "NP" ? NLC_STATES : IMLC_STATES)
 
+  const activeProviders = useMemo(() => PROVIDERS.filter((p) => !p.terminated), [])
+
+  const handleExportAll = () => {
+    const rows = buildFullProviderExportRows(activeProviders, getActiveStates, getActiveDea, getCeuStatus)
+    downloadCsv(toCsv(rows), `providers-full-export-${new Date().toISOString().slice(0, 10)}.csv`)
+  }
+
   return (
-    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="print-page" style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Provider Directory" subtitle="Search and expand for DEA, compacts, and licenses" />
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", marginBottom: 24 }}>
+      <div className="no-print" style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", marginBottom: 24 }}>
         <input
           type="text"
           value={search}
@@ -79,6 +88,38 @@ export default function ProviderDirectory() {
             <option value="90">Next 90 days</option>
           </select>
         </label>
+        <button
+          type="button"
+          onClick={handleExportAll}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: "none",
+            background: theme.accent,
+            color: theme.accentText,
+            fontSize: 14,
+            cursor: "pointer",
+            fontWeight: 600,
+          }}
+        >
+          Export full list (CSV)
+        </button>
+        <button
+          type="button"
+          className="no-print"
+          onClick={() => window.print()}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 8,
+            border: `1px solid ${theme.border1}`,
+            background: theme.bg2,
+            color: theme.text,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Print
+        </button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {filtered.map((p) => {
@@ -107,7 +148,9 @@ export default function ProviderDirectory() {
               >
                 <span style={{ opacity: 0.7 }}>{open ? "▼" : "▶"}</span>
                 <CredBadge type={p.type} />
-                <span style={{ fontWeight: 600 }}>{p.name}</span>
+                <Link to={`/provider/${p.id}`} style={{ fontWeight: 600, color: theme.text, textDecoration: "none" }} onClick={(e) => e.stopPropagation()}>
+                  {p.name}
+                </Link>
                 <span style={{ fontSize: 12, color: theme.muted }}>({activeStates.length} active license{activeStates.length !== 1 ? "s" : ""}{expiredStates.length ? `, ${expiredStates.length} expired` : ""})</span>
               </button>
               {open && (

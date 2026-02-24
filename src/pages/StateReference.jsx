@@ -88,8 +88,8 @@ export default function StateReference() {
                 <span style={{ color: theme.muted }}>{count} provider{count !== 1 ? "s" : ""}</span>
               </div>
               <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 14 }}>
-                <a href={info.url} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent }}>
-                  {info.url}
+                <a href={info.url} target="_blank" rel="noopener noreferrer" style={{ color: theme.accent }} title={info.url}>
+                  Board / Renewal →
                 </a>
                 <span style={{ color: theme.muted }}>{info.phone}</span>
               </div>

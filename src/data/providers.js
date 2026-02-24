@@ -1,15 +1,15 @@
 export const PROVIDERS = [
   { id:0,  name:"Doron Stember",       type:"MD", terminated:false, npi:"1902064124",  contractStart:null,        dea:[{state:"FL",num:"FS1248257"},{state:"CT",num:"FS2487925"}], states:["AL","AZ","AR","CA","CO","CT","FL","GA","ID","IL","IN","KY","ME","MD","MI","MO","MT","NE","NH","NJ","NY","NC","OH","PA","SC","TN","TX","UT","VA","WA","WI"] },
   { id:1,  name:"Tzvi Doron",          type:"DO", terminated:false, npi:"1558794776",  contractStart:"9/2/2025",  dea:[{state:"NY",num:"FD6064909"}], states:["AL","AK","AZ","AR","CA","CO","CT","DC","DE","FL","GA","HI","IA","ID","IL","IN","KS","KY","LA","ME","MD","MI","MN","MO","MS","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"] },
-  { id:2,  name:"Lindsay Burden",      type:"NP", terminated:false, npi:"1578934873",  contractStart:"9/1/2023",  dea:[{state:"FL",num:"MB8930566"},{state:"UT",num:"MB9714406"},{state:"MD",num:"MB0364098"}], states:["AZ","CA","CO","FL","GA","IA","ID","IL","IN","KS","KY","ME","MD","MI","MN","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OR","PA","SC","TN","TX","UT","VT","VA","WA","WI","WY"], deaExpirations: { UT: "2025-08-15", FL: "2026-03-01" } },
-  { id:3,  name:"Bill Carbonneau",     type:"NP", terminated:false, npi:"1528158714",  contractStart:"8/15/2022", dea:[{state:"FL",num:"MC0334362"},{state:"UT",num:"MC9901326"},{state:"MD",num:"MC0011522"}], states:["AZ","CA","CO","FL","IA","ID","IL","IN","KS","MA","ME","MD","MI","MN","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","SD","TX","UT","VT","VA","WA","WV","WI"], licenseExpirations: { NJ: "2024-03-31" }, deaExpirations: { MD: "2024-12-01", FL: "2026-06-30" } },
-  { id:4,  name:"Summer Denny",        type:"NP", terminated:false, npi:"1740830405",  contractStart:"11/8/2023", dea:[{state:"CO",num:"MD9419777"}], states:["AZ","CA","CO","FL","ID","KY","MO","MT","NM","NV","NY","OH","OR","VA","WA"], licenseExpirations: { CA: "2026-01-15", FL: "2025-11-20" } },
-  { id:5,  name:"Victor Lopez",        type:"NP", terminated:false, npi:"1851621536",  contractStart:"3/15/2022", dea:[{state:"FL",num:"ML5090890"}], states:["AL","AZ","CA","CO","CT","FL","GA","IA","IL","IN","KY","ME","MI","MT","NJ","NM","NY","NC","OH","OR","PA","TN","TX","VA","WA","WI"], licenseExpirations: { FL: "2024-06-01", NJ: "2024-01-15", TX: "2026-04-01" } },
-  { id:6,  name:"Martin Van Dongen",   type:"NP", terminated:false, npi:"1659969863",  contractStart:"3/25/2024", dea:[{state:"FL",num:"MV6251817"}], states:["FL","ID","IL","IN","MI","MN","MT","NJ","NC","OH","PA","UT","VA","WA","WV","WI"], licenseExpirations: { NJ: "2023-12-01" } },
-  { id:7,  name:"Tim Mack",            type:"NP", terminated:false, npi:"1104470590",  contractStart:"3/26/2024", dea:[{state:"CA",num:"MM5440033"}], states:["AZ","CA","CO","IA","IL","NE","NM","ND","OR","TX","VT"] },
+  { id:2,  name:"Lindsay Burden",      type:"NP", terminated:false, npi:"1578934873",  contractStart:"9/1/2023",  dea:[{state:"FL",num:"MB8930566"},{state:"UT",num:"MB9714406"},{state:"MD",num:"MB0364098"}], states:["AZ","CA","CO","FL","GA","IA","ID","IL","IN","KS","KY","ME","MD","MI","MN","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OR","PA","SC","TN","TX","UT","VT","VA","WA","WI","WY"], deaExpirations: { UT: "2025-08-15", FL: "2026-03-01" }, ceu: { cycleEnd: "2026-06-30", required: 75, completed: 60 } },
+  { id:3,  name:"Bill Carbonneau",     type:"NP", terminated:false, npi:"1528158714",  contractStart:"8/15/2022", dea:[{state:"FL",num:"MC0334362"},{state:"UT",num:"MC9901326"},{state:"MD",num:"MC0011522"}], states:["AZ","CA","CO","FL","IA","ID","IL","IN","KS","MA","ME","MD","MI","MN","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","SD","TX","UT","VT","VA","WA","WV","WI"], licenseExpirations: { NJ: "2024-03-31" }, deaExpirations: { MD: "2024-12-01", FL: "2026-06-30" }, ceu: { cycleEnd: "2025-12-31", required: 50, completed: 50 } },
+  { id:4,  name:"Summer Denny",        type:"NP", terminated:false, npi:"1740830405",  contractStart:"11/8/2023", dea:[{state:"CO",num:"MD9419777"}], states:["AZ","CA","CO","FL","ID","KY","MO","MT","NM","NV","NY","OH","OR","VA","WA"], licenseExpirations: { CA: "2026-01-15", FL: "2025-11-20" }, ceu: { cycleEnd: "2026-03-31", required: 75, completed: 20 } },
+  { id:5,  name:"Victor Lopez",        type:"NP", terminated:false, npi:"1851621536",  contractStart:"3/15/2022", dea:[{state:"FL",num:"ML5090890"}], states:["AL","AZ","CA","CO","CT","FL","GA","IA","IL","IN","KY","ME","MI","MT","NJ","NM","NY","NC","OH","OR","PA","TN","TX","VA","WA","WI"], licenseExpirations: { FL: "2024-06-01", NJ: "2024-01-15", TX: "2026-04-01" }, ceu: { cycleEnd: "2026-04-30", required: 50, completed: 48 } },
+  { id:6,  name:"Martin Van Dongen",   type:"NP", terminated:false, npi:"1659969863",  contractStart:"3/25/2024", dea:[{state:"FL",num:"MV6251817"}], states:["FL","ID","IL","IN","MI","MN","MT","NJ","NC","OH","PA","UT","VA","WA","WV","WI"], licenseExpirations: { NJ: "2023-12-01" }, ceu: { cycleEnd: "2025-09-30", required: 25, completed: 10 } },
+  { id:7,  name:"Tim Mack",            type:"NP", terminated:false, npi:"1104470590",  contractStart:"3/26/2024", dea:[{state:"CA",num:"MM5440033"}], states:["AZ","CA","CO","IA","IL","NE","NM","ND","OR","TX","VT"], ceu: { cycleEnd: "2026-12-31", required: 75, completed: 75 } },
   { id:8,  name:"Bryana Anderson",     type:"NP", terminated:false, npi:"1386001576",  contractStart:"5/2/2024",  dea:[{state:"TX",num:"MA4122951"}], states:["AR","CA","IA","ID","IL","IN","LA","MI","NE","NM","NY","OK","TX"] },
-  { id:9,  name:"Priya Chaudhari",     type:"NP", terminated:false, npi:"1952846909",  contractStart:"5/21/2024", dea:[{state:"FL",num:"MC9110002"}], states:["AZ","FL","ID","IL","MO","OH","WI"] },
-  { id:10, name:"Terray Humphrey",     type:"NP", terminated:false, npi:"1164941415",  contractStart:"2/5/2025",  dea:[{state:"GA",num:"MH4669581"},{state:"UT",num:"MH9741047"}], states:["CA","FL","GA","MI","NY","NC","OH","TX","UT","VA"], deaExpirations: { GA: "2026-02-28" } },
+  { id:9,  name:"Priya Chaudhari",     type:"NP", terminated:false, npi:"1952846909",  contractStart:"5/21/2024", dea:[{state:"FL",num:"MC9110002"}], states:["AZ","FL","ID","IL","MO","OH","WI"], ceu: { cycleEnd: "2026-06-15", required: 50, completed: 0 } },
+  { id:10, name:"Terray Humphrey",     type:"NP", terminated:false, npi:"1164941415",  contractStart:"2/5/2025",  dea:[{state:"GA",num:"MH4669581"},{state:"UT",num:"MH9741047"}], states:["CA","FL","GA","MI","NY","NC","OH","TX","UT","VA"], deaExpirations: { GA: "2026-02-28" }, ceu: { cycleEnd: "2026-02-28", required: 75, completed: 35 } },
   { id:11, name:"Vivien Lee",          type:"NP", terminated:false, npi:"1811688591",  contractStart:"3/3/2025",  dea:[{state:"CA",num:"ML8109806"}], states:["CA","CO","ND"] },
   { id:12, name:"Liz Gloor",           type:"NP", terminated:false, npi:"1346552742",  contractStart:"3/21/2025", dea:[{state:"MD",num:"MG7991006"}], states:["FL","IA","MD","NV","NC","VA"] },
   { id:13, name:"Bryce Amos",          type:"NP", terminated:false, npi:"1952972390",  contractStart:"4/11/2025", dea:[{state:"FL",num:"MA6869359"}], states:["DC","FL","NY","OH"] },
@@ -99,6 +99,25 @@ export function getDeaExpiringIn(provider, days) {
       return d >= today() && d <= end
     })
     .map(({ state, num }) => ({ state, num, expires: provider.deaExpirations[state] }))
+}
+
+/** CEU status for a provider. Returns null if no CEU data. */
+export function getCeuStatus(provider) {
+  const ceu = provider.ceu
+  if (!ceu || ceu.required == null) return null
+  const completed = ceu.completed ?? 0
+  const required = ceu.required
+  const remaining = Math.max(0, required - completed)
+  const pct = required ? Math.min(100, Math.round((completed / required) * 100)) : 100
+  const isComplete = completed >= required
+  return {
+    cycleEnd: ceu.cycleEnd,
+    required,
+    completed,
+    remaining,
+    pct,
+    isComplete,
+  }
 }
 
 export const DEFAULT_PATIENT_STATES = ["CA","TX","FL","NY","PA","IL","OH","GA","NC","MI","NJ","VA","WA","AZ","TN","MA","IN","MO","MD","WI","CO","MN"]

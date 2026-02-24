@@ -16,6 +16,7 @@ import CompactEligibility from "./pages/CompactEligibility"
 import StateReference from "./pages/StateReference"
 import ProviderComparison from "./pages/ProviderComparison"
 import RenewalCalendar from "./pages/RenewalCalendar"
+import CEUTracker from "./pages/CEUTracker"
 import { PROVIDERS } from "./data/providers"
 
 const nav = [
@@ -29,6 +30,7 @@ const nav = [
   { path: "/dea", label: "DEA", icon: "💊" },
   { path: "/npi", label: "NPI", icon: "🪪" },
   { path: "/calendar", label: "Calendar", icon: "📅" },
+  { path: "/ceu", label: "CEU", icon: "📚" },
   { path: "/nlc", label: "Compacts", icon: "🤝" },
   { path: "/ref", label: "State Boards", icon: "🏛" },
   { path: "/compare", label: "Compare", icon: "⚖" },
@@ -83,6 +85,7 @@ function Layout({ children }) {
   return (
     <div style={{ minHeight: "100vh", background: theme.bg0, fontFamily: "'DM Sans', sans-serif" }}>
       <nav
+        className="no-print"
         style={{
           position: "sticky",
           top: 0,
@@ -224,6 +227,8 @@ function App() {
         <Route path="/ref" element={<StateReference />} />
         <Route path="/compare" element={<ProviderComparison />} />
         <Route path="/calendar" element={<RenewalCalendar />} />
+        <Route path="/ceu" element={<CEUTracker />} />
+        <Route path="/provider/:id" element={<ProviderDetail />} />
       </Routes>
       </ErrorBoundary>
     </Layout>

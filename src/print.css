@@ -1,0 +1,34 @@
+/* Print-friendly styles: hide nav and non-essential UI, improve contrast */
+@media print {
+  .no-print,
+  nav,
+  button.no-print,
+  .no-print {
+    display: none !important;
+  }
+  body,
+  .print-page,
+  [style*="background"] {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  a[href] {
+    color: #111;
+    text-decoration: underline;
+  }
+  .print-page {
+    padding: 16px !important;
+    min-height: auto !important;
+  }
+  /* Avoid breaking cards/tables across pages where possible */
+  .print-page table {
+    page-break-inside: auto;
+  }
+  .print-page tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  .print-page thead {
+    display: table-header-group;
+  }
+}

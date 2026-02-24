@@ -62,9 +62,9 @@ export default function RenewalCalendar() {
   }
 
   return (
-    <div style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="print-page" style={{ padding: 24, background: theme.bg0, minHeight: "100vh", color: theme.text, fontFamily: "'DM Sans', sans-serif" }}>
       <PageHeader title="Renewal Calendar" subtitle="Licenses and DEA registrations expiring by month" />
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
+      <div className="no-print" style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
         <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: theme.muted }}>
           Show next
           <select
@@ -99,6 +99,22 @@ export default function RenewalCalendar() {
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="no-print"
+          onClick={() => window.print()}
+          style={{
+            padding: "8px 16px",
+            borderRadius: 6,
+            border: `1px solid ${theme.border1}`,
+            background: theme.bg2,
+            color: theme.text,
+            fontSize: 14,
+            cursor: "pointer",
+          }}
+        >
+          Print
+        </button>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         {byMonth.map(([key, { licenses, dea }]) => {
@@ -113,7 +129,7 @@ export default function RenewalCalendar() {
                   <ul style={{ margin: 0, paddingLeft: 20 }}>
                     {licenses.map((x, i) => (
                       <li key={i} style={{ marginBottom: 4 }}>
-                        <Link to="/dir" style={{ color: theme.accent, textDecoration: "none" }}>{x.provider.name}</Link>
+                        <Link to={`/provider/${x.provider.id}`} style={{ color: theme.accent, textDecoration: "none" }}>{x.provider.name}</Link>
                         <span style={{ color: theme.muted }}> — </span>
                         <span>{STATE_NAMES[x.state] || x.state}</span>
                         <span style={{ color: theme.muted, fontSize: 12 }}> ({x.expires})</span>
@@ -128,7 +144,7 @@ export default function RenewalCalendar() {
                   <ul style={{ margin: 0, paddingLeft: 20 }}>
                     {dea.map((x, i) => (
                       <li key={i} style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
-                        <Link to="/dir" style={{ color: theme.accent, textDecoration: "none" }}>{x.provider.name}</Link>
+                        <Link to={`/provider/${x.provider.id}`} style={{ color: theme.accent, textDecoration: "none" }}>{x.provider.name}</Link>
                         <CredBadge type={x.provider.type} />
                         <span>{x.state} {x.num}</span>
                         <span style={{ color: theme.muted, fontSize: 12 }}>({x.expires})</span>
